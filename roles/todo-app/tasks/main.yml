@@ -1,0 +1,35 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install Docker.io, Node.js, npm, and Git
+  apt:
+    name:
+      - docker.io
+      - nodejs
+      - npm
+      - git
+    state: present
+
+- name: Clone the private repository from GitHub
+  command: git clone https://{{ github_access_token }}:x-oauth-basic@{{ github_repo_url }} {{ app_directory }}
+  args:
+    creates: "{{ app_directory }}/.git"
+
+
+- name: Copy env.j2 template to remote .env
+  template:
+    src: roles/todo-app/templates/env.j2
+    dest: "{{ app_directory }}/.env"
+
+- name: Stop existing Docker container
+  command: docker rm -f "{{ docker_container_name }}"
+  ignore_errors: no
+
+- name: Build Docker image from Dockerfile
+  command: docker build -t "{{ docker_image_name }}" "{{ app_directory }}"
+
+- name: Run Docker container from image
+  command: docker run -d --name "{{ docker_container_name }}" -p "{{ host_port }}:{{ app_port }}" "{{ docker_image_name }}"

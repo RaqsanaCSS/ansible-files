@@ -1,0 +1,89 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install python3-pymysql
+  apt:
+    name: python3-pymysql
+    state: present
+    update_cache: yes
+
+- name: Install MySQL server
+  apt:
+    name: mysql-server
+    state: present
+
+- name: Copy .my.cnf
+  copy:
+    src: ../../../mysql_conf/.my.conf  
+    dest: /root/.my.cnf   
+    owner: root  
+    group: root 
+    mode: '0600'
+
+- name: Start MySQL service
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Change root user authentication to mysql_native_password
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: root
+    host: localhost
+    password: "{{ mysql_root_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+    append_privs: yes
+    check_implicit_admin: yes
+    plugin: mysql_native_password
+
+- name: Remove anonymous MySQL users using .my.cnf
+  mysql_user:
+    config_file: /root/.my.cnf
+    name: ''
+    host_all: yes
+    state: absent
+
+- name: Create a new MySQL database using .my.cnf
+  mysql_db:
+    config_file: /root/.my.cnf
+    name: "{{ mysql_db }}"
+    state: present
+
+- name: Create 'ansibleuser' with all privileges on 'ansible' database using .my.cnf
+  mysql_user:
+    config_file: /root/.my.cnf
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_password }}"
+    host: '%'
+    priv: "ansible.*:ALL"
+    state: present
+
+- name: Update MySQL bind address in my.cnf
+  ansible.builtin.lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf 
+    regexp: '^bind-address\s*=\s*127\.0\.0\.1'
+    line: 'bind-address = 0.0.0.0'
+    backup: yes
+
+- name: Copy 'users' and 'tasks' tables creation script
+  copy:
+    src: ../templates/tables.sql
+    dest: /tmp/tables.sql
+
+- name: Create tables using root credentials from .my.cnf
+  mysql_db:
+    config_file: /root/.my.cnf
+    name: "{{ mysql_db }}"
+    state: import
+    target: /tmp/tables.sql
+    
+- name: Restart MySQL service
+  service:
+    name: mysql
+    state: restarted
+    enabled: yes

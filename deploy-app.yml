@@ -1,0 +1,9 @@
+---
+- name: Build docker image and run web application
+  hosts: digital_ocean_server
+  become: yes
+  vars_files:
+    - roles/vars/deploy_vars.yml
+  roles:
+    - todo-app
+    

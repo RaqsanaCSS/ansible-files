@@ -1,0 +1,8 @@
+---
+- name: Install and Configure MySQL on a DigitalOcean Droplet
+  hosts: mysql_server
+  become: yes
+  vars_files:
+    - roles/vars/mysql_vars.yml
+  roles:
+    - mysql
