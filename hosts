@@ -1,5 +1,5 @@
 [mysql_server]
-164.92.86.148 ansible_user=root ansible_ssh_private_key_file=./id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+164.92.86.148 ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [digital_ocean_server]
-164.92.119.180 ansible_user=root ansible_ssh_private_key_file=./id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+164.92.119.180 ansible_user=root ansible_ssh_common_args='-o StrictHostKeyChecking=no'
