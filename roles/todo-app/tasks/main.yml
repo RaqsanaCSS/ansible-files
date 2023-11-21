@@ -15,8 +15,8 @@
 
 - name: Clone a github repository
   git:
-    repo: https://{{ github_access_token }}:x-oauth-basic@{{ github_repo_url }}
-    dest: {{ app_directory }}
+    repo: https://"{{ github_access_token }}":x-oauth-basic@"{{ github_repo_url }}"
+    dest: "{{ app_directory }}"
     clone: yes
     update: yes
 
