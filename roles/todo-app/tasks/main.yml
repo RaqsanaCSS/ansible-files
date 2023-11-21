@@ -13,10 +13,12 @@
       - git
     state: present
 
-- name: Clone the private repository from GitHub
-  command: git clone https://{{ github_access_token }}:x-oauth-basic@{{ github_repo_url }} {{ app_directory }}
-  args:
-    creates: "{{ app_directory }}/.git"
+- name: Clone a github repository
+  git:
+    repo: https://{{ github_access_token }}:x-oauth-basic@{{ github_repo_url }}
+    dest: {{ app_directory }}
+    clone: yes
+    update: yes
 
 
 - name: Copy env.j2 template to remote .env
